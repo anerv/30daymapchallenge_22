@@ -107,7 +107,7 @@ for q in bicycle_infrastructure_queries.values():
 
     edges.loc[osm_filtered.index, "bicycle_infrastructure"] = "yes"
 
-#%%
+
 bicycle_edges = edges.loc[edges.bicycle_infrastructure == "yes"].copy()
 
 #%%

@@ -1,0 +1,6 @@
+*.qgz
+*.pbf
+*.gpkg
+*.gpkg-shm
+*.gpkg-wal
+*.tif
