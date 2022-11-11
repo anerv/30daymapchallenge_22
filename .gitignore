@@ -4,3 +4,8 @@
 *.gpkg-shm
 *.gpkg-wal
 *.tif
+*.zip
+*.csv
+*.DS_Store
+*.xml
+*.json
