@@ -1,11 +1,11 @@
 #%%
 import requests
 from bs4 import BeautifulSoup
-import lxml
 import json
 import pandas as pd
 import geopandas as gpd
-
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 #%%
 # Download first XML file
 URL = "https://www.dst.dk/valg/Valg1968094/xml/fintal.xml"
@@ -125,11 +125,6 @@ voting_results_df = voting_results_df.merge(
 voting_results_df.to_csv("../data/voting_results.csv")
 
 #%%
-# # Read in geometries with opstillingskreds
-# ops_geoms = gpd.read_file("../data/opstillingskredse.gpkg")
-# ops_geoms = ops_geoms[["opstilling", "navn", "geometry"]]
-# ops_geoms["ops_id_name"] = ops_geoms.opstilling + ". " + ops_geoms.navn
-#%%
 # Read geometries from DAGI
 geometries = gpd.read_file("../data/afs_areas.gpkg")
 
@@ -147,13 +142,6 @@ useful_cols = [
 ]
 geometries = geometries[useful_cols]
 
-# ops_geoms["geometry"] = ops_geoms.geometry.buffer(100)
-# ops_geoms.rename({"navn": "ops_navn"}, axis=1, inplace=True)
-
-# # use spatial join to connect ops id to afs geometries
-# geometries = afs_geoms.sjoin(ops_geoms, how="left", predicate="within")
-
-# assert len(geometries.loc[geometries.ops_navn.isna()]) == 0
 #%%
 # Read pop and geo data
 pop = pd.read_csv("../data/election_data2/Udregning.csv", sep=";")
@@ -359,5 +347,14 @@ voting_results["total"] = (
     voting_results.red + voting_results.blue + voting_results.None_pct
 )
 #%%
-
+norm = mpl.colors.Normalize(vmin=-1, vmax=100)
+voting_results.plot(column="red", cmap="Reds", legend=True, norm=norm)
 # %%
+voting_results.to_file("../data/voting.gpkg")
+#%%
+fig, ax = plt.subplots(figsize=(10,10))
+norm = mpl.colors.Normalize(vmin=-1, vmax=100)
+voting_results.plot(ax=ax, column="red", cmap="Reds", legend=True, norm=norm)
+ax.set_axis_off()
+# %%
+    
