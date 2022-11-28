@@ -6,6 +6,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
 #%%
 # Download first XML file
 URL = "https://www.dst.dk/valg/Valg1968094/xml/fintal.xml"
@@ -332,6 +333,7 @@ voting_results["red"] = (
     + voting_results.F_pct
     + voting_results.Å_pct
     + voting_results.B_pct
+    + voting_results.Q_pct
 )
 
 voting_results["blue"] = (
@@ -342,6 +344,7 @@ voting_results["blue"] = (
     + voting_results.M_pct
     + voting_results.V_pct
     + voting_results.Æ_pct
+    + voting_results.K_pct
 )
 voting_results["total"] = (
     voting_results.red + voting_results.blue + voting_results.None_pct
@@ -352,9 +355,104 @@ voting_results.plot(column="red", cmap="Reds", legend=True, norm=norm)
 # %%
 voting_results.to_file("../data/voting.gpkg")
 #%%
-fig, ax = plt.subplots(figsize=(10,10))
+fig, ax = plt.subplots(figsize=(10, 10))
 norm = mpl.colors.Normalize(vmin=-1, vmax=100)
 voting_results.plot(ax=ax, column="red", cmap="Reds", legend=True, norm=norm)
 ax.set_axis_off()
 # %%
-    
+import numpy as np
+from shapely.geometry import Point
+
+
+def Random_Points_in_Polygon(polygon, number):
+    points = []
+    minx, miny, maxx, maxy = polygon.bounds
+    while len(points) < number:
+        pnt = Point(np.random.uniform(minx, maxx), np.random.uniform(miny, maxy))
+        if polygon.contains(pnt):
+            points.append(pnt)
+    return points
+
+
+def Random_Points_in_Bounds(polygon, number):
+
+    gdf_poly = gpd.GeoDataFrame(geometry=[polygon])
+
+    minx, miny, maxx, maxy = polygon.bounds
+    x = np.random.uniform(minx, maxx, number)
+    y = np.random.uniform(miny, maxy, number)
+
+    df = pd.DataFrame()
+    df["points"] = list(zip(x, y))
+    df["points"] = df["points"].apply(Point)
+    gdf_points = gpd.GeoDataFrame(df, geometry="points")
+
+    sjoin = gpd.tools.sjoin(gdf_points, gdf_poly, predicate="within", how="left")
+
+    return sjoin.geometry.to_list()
+
+
+#%%
+# TODO
+# for each geometry in voting_results:
+# get total number of votes and geom
+# Generate points
+# Save point to new point gdf with name/id of afs area
+polys = gpd.GeoDataFrame.from_file("../data/voting.gpkg")
+polys["id"] = polys.index
+polys["red_count"] = (
+    polys.A_count
+    + polys.Ø_count
+    + polys.F_count
+    + polys.Å_count
+    + polys.B_count
+    + polys.Q_count
+)
+
+polys["blue_count"] = (
+    polys.C_count
+    + polys.D_count
+    + polys.I_count
+    + polys.O_count
+    + polys.M_count
+    + polys.V_count
+    + polys.Æ_count
+    + polys.K_count
+)
+# %%
+
+all_red_points = []
+all_blue_points = []
+all_other_points = []
+
+for index, row in polys.iterrows():
+
+    print(index)
+    voter_count = int(row.voters)
+
+    poly = row.geometry
+
+    points = Random_Points_in_Polygon(poly, voter_count)
+
+    blue_count = int(row.blue_count)
+    red_count = int(row.red_count)
+    other_count = int(voter_count - blue_count - red_count)
+
+    red_points = Random_Points_in_Polygon(poly, red_count)
+    blue_points = Random_Points_in_Polygon(poly, blue_count)
+    other_points = Random_Points_in_Bounds(poly, other_count)
+
+    all_red_points.extend(red_points)
+    all_blue_points.extend(blue_points)
+    all_other_points.extend(other_points)
+
+# %%
+red_gdf = gpd.GeoDataFrame(geometry=all_red_points, crs=polys.crs)
+blue_gdf = gpd.GeoDataFrame(geometry=all_blue_points, crs=polys.crs)
+other_gdf = gpd.GeoDataFrame(geometry=all_other_points, crs=polys.crs)
+
+# %%
+red_gdf.to_file("../data/red.gpkg")
+blue_gdf.to_file("../data/blue.gpkg")
+other_gdf.to_file("../data/other.gpkg")
+# %%
