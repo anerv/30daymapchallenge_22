@@ -360,6 +360,7 @@ norm = mpl.colors.Normalize(vmin=-1, vmax=100)
 voting_results.plot(ax=ax, column="red", cmap="Reds", legend=True, norm=norm)
 ax.set_axis_off()
 # %%
+##### 
 import numpy as np
 from shapely.geometry import Point
 
@@ -398,61 +399,61 @@ def Random_Points_in_Bounds(polygon, number):
 # get total number of votes and geom
 # Generate points
 # Save point to new point gdf with name/id of afs area
-polys = gpd.GeoDataFrame.from_file("../data/voting.gpkg")
-polys["id"] = polys.index
-polys["red_count"] = (
-    polys.A_count
-    + polys.Ø_count
-    + polys.F_count
-    + polys.Å_count
-    + polys.B_count
-    + polys.Q_count
-)
+# polys = gpd.GeoDataFrame.from_file("../data/voting.gpkg")
+# polys["id"] = polys.index
+# polys["red_count"] = (
+#     polys.A_count
+#     + polys.Ø_count
+#     + polys.F_count
+#     + polys.Å_count
+#     + polys.B_count
+#     + polys.Q_count
+# )
 
-polys["blue_count"] = (
-    polys.C_count
-    + polys.D_count
-    + polys.I_count
-    + polys.O_count
-    + polys.M_count
-    + polys.V_count
-    + polys.Æ_count
-    + polys.K_count
-)
-# %%
+# polys["blue_count"] = (
+#     polys.C_count
+#     + polys.D_count
+#     + polys.I_count
+#     + polys.O_count
+#     + polys.M_count
+#     + polys.V_count
+#     + polys.Æ_count
+#     + polys.K_count
+# )
+# # %%
 
-all_red_points = []
-all_blue_points = []
-all_other_points = []
+# all_red_points = []
+# all_blue_points = []
+# all_other_points = []
 
-for index, row in polys.iterrows():
+# for index, row in polys.iterrows():
 
-    print(index)
-    voter_count = int(row.voters)
+#     print(index)
+#     voter_count = int(row.voters)
 
-    poly = row.geometry
+#     poly = row.geometry
 
-    points = Random_Points_in_Polygon(poly, voter_count)
+#     points = Random_Points_in_Polygon(poly, voter_count)
 
-    blue_count = int(row.blue_count)
-    red_count = int(row.red_count)
-    other_count = int(voter_count - blue_count - red_count)
+#     blue_count = int(row.blue_count)
+#     red_count = int(row.red_count)
+#     other_count = int(voter_count - blue_count - red_count)
 
-    red_points = Random_Points_in_Polygon(poly, red_count)
-    blue_points = Random_Points_in_Polygon(poly, blue_count)
-    other_points = Random_Points_in_Bounds(poly, other_count)
+#     red_points = Random_Points_in_Polygon(poly, red_count)
+#     blue_points = Random_Points_in_Polygon(poly, blue_count)
+#     other_points = Random_Points_in_Bounds(poly, other_count)
 
-    all_red_points.extend(red_points)
-    all_blue_points.extend(blue_points)
-    all_other_points.extend(other_points)
+#     all_red_points.extend(red_points)
+#     all_blue_points.extend(blue_points)
+#     all_other_points.extend(other_points)
 
-# %%
-red_gdf = gpd.GeoDataFrame(geometry=all_red_points, crs=polys.crs)
-blue_gdf = gpd.GeoDataFrame(geometry=all_blue_points, crs=polys.crs)
-other_gdf = gpd.GeoDataFrame(geometry=all_other_points, crs=polys.crs)
+# # %%
+# red_gdf = gpd.GeoDataFrame(geometry=all_red_points, crs=polys.crs)
+# blue_gdf = gpd.GeoDataFrame(geometry=all_blue_points, crs=polys.crs)
+# other_gdf = gpd.GeoDataFrame(geometry=all_other_points, crs=polys.crs)
 
-# %%
-red_gdf.to_file("../data/red.gpkg")
-blue_gdf.to_file("../data/blue.gpkg")
-other_gdf.to_file("../data/other.gpkg")
+# # %%
+# red_gdf.to_file("../data/red.gpkg")
+# blue_gdf.to_file("../data/blue.gpkg")
+# other_gdf.to_file("../data/other.gpkg")
 # %%
